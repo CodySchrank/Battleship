@@ -39,6 +39,7 @@ enum GamePhase {
 
 enum Resources {
     water ("water", 0),
+    watercloud ("watercloud", 0),
     tugboat ("tugboat", 2),
     submarine ("submarine", 3),
     destroyer ("destroyer", 3),
@@ -73,6 +74,9 @@ class MainScreen extends JFrame {
         try {
             Image water = ImageIO.read(getClass().getResource("Water.png"));
             images.put(Resources.water.getValue(), water);
+
+            Image watercloud = ImageIO.read(getClass().getResource("WaterCloud.png"));
+            images.put(Resources.watercloud.getValue(), watercloud);
 
             Image tugboat = ImageIO.read(getClass().getResource("TugBoat.png"));
             images.put(Resources.tugboat.getValue(), tugboat);
@@ -162,8 +166,11 @@ class BattleShip {
     public ShipButton shipToSet;
     public MainScreen screen;
     public BoardPanel boardPanel;
+    public BoardPanel enemyBoardPanel;
+    public JPanel shipPanel;
 
-    private GamePhase phase = GamePhase.start;
+    public boolean enemyTurn = false;
+    public GamePhase phase = GamePhase.start;
     
     private int[][] playerBoard = new int[10][10];
     private int[][] enemyBoard = new int[10][10];
@@ -177,17 +184,17 @@ class BattleShip {
     public void startGame() {
         this.phase = GamePhase.setting;
 
-        this.boardPanel = new BoardPanel(this);
+        this.boardPanel = new BoardPanel(this, false);
 
         screen.add(boardPanel);
 
         //ship panel
 
-        JPanel shipPanel = new JPanel();
+        this.shipPanel = new JPanel();
 
         shipPanel.setSize(200, 500);
         
-        shipPanel.setBorder(new EmptyBorder(0, 50, 0, 0));
+        shipPanel.setBorder(new EmptyBorder(0, 100, 0, 0));
 
         shipPanel.setLayout(new GridBagLayout());
 
@@ -287,6 +294,22 @@ class BattleShip {
 
     void play() {
         this.phase = GamePhase.playing;
+
+        screen.remove(this.shipPanel);
+
+        JPanel emptyPanel = new JPanel();
+
+        emptyPanel.setBorder(new EmptyBorder(0, 100, 0, 0));
+        
+        emptyPanel.setOpaque(false);
+
+        screen.add(emptyPanel);
+
+        this.enemyBoardPanel = new BoardPanel(this, true);
+
+        screen.add(enemyBoardPanel);
+
+
     }
 
     void printPlayerBoard() {
@@ -323,7 +346,7 @@ class GlassPane extends JComponent {
     GlassPane() {
         ships = new ArrayList<Ship>();
 
-        int xStart = 185;
+        int xStart = 160;
         for(int i = 0; i < xPossible.length; i++) {
             xPossible[i] = xStart + (i * 30);
         }
@@ -369,8 +392,12 @@ class GlassPane extends JComponent {
 }
 
 class BoardPanel extends JPanel {
-    BoardPanel(BattleShip game) {
+    public boolean enemyBoard = false;
+
+    BoardPanel(BattleShip game, boolean enemyboard) {
         super();
+
+        this.enemyBoard = enemyboard;
 
         setSize(500, 500);
 
@@ -389,39 +416,72 @@ class BoardPanel extends JPanel {
                     button.setText(String.valueOf(j));
                 }
 
-                if(i != 0 && j != 0) {
-                    Image img = game.screen.getImage(Resources.water);
-                    button.setIcon(new ImageIcon(img));
-                    button.setBorderPainted(false); 
-                    button.setContentAreaFilled(false); 
-                    button.setFocusPainted(false); 
-                    button.setOpaque(false);
-                    
-                    final int thisI = i;
-                    final int thisJ = j;
+                if (i != 0 && j != 0) {
+                    if (game.phase == GamePhase.setting) {
+                        Image img = game.screen.getImage(Resources.water);
+                        button.setIcon(new ImageIcon(img));
+                        button.setBorderPainted(false);
+                        button.setContentAreaFilled(false);
+                        button.setFocusPainted(false);
+                        button.setOpaque(false);
 
-                    button.addActionListener((ActionEvent e) -> {
-                        PointerInfo a = MouseInfo.getPointerInfo();
-                        Point b = a.getLocation();
-                        int x = (int) b.getX();
-                        int y = (int) b.getY();
+                        final int thisI = i;
+                        final int thisJ = j;
 
-                        if(game.shipToSet != null) {
-                            game.invalidShipPlacementLabel.setVisible(false);
-                            
-                            boolean validPlacement = game.setShip(x, y, thisI, thisJ);
-                            
-                            if(!validPlacement) {
-                                game.invalidShipPlacementLabel.setVisible(true);
-                            } else {
-                                if(game.checkIfAllShipsSet()) {
-                                    System.out.println("Time to play!");
+                        button.addActionListener((ActionEvent e) -> {
+                            PointerInfo a = MouseInfo.getPointerInfo();
+                            Point b = a.getLocation();
+                            int x = (int) b.getX();
+                            int y = (int) b.getY();
+
+                            if (game.shipToSet != null) {
+                                game.invalidShipPlacementLabel.setVisible(false);
+
+                                boolean validPlacement = game.setShip(x, y, thisI, thisJ);
+
+                                if (!validPlacement) {
+                                    game.invalidShipPlacementLabel.setVisible(true);
                                 } else {
-                                    System.out.println("More ships to set");
+                                    if (game.checkIfAllShipsSet()) {
+                                        System.out.println("Time to play!");
+                                        game.play();
+                                    } else {
+                                        System.out.println("More ships to set");
+                                    }
                                 }
                             }
+                        });
+                    } else if(game.phase == GamePhase.playing) {
+                        if(this.enemyBoard) {
+                            Image img = game.screen.getImage(Resources.watercloud);
+                            button.setIcon(new ImageIcon(img));
+                            button.setBorderPainted(false);
+                            button.setContentAreaFilled(false);
+                            button.setFocusPainted(false);
+                            button.setOpaque(false);
+
+                            final int thisI = i;
+                            final int thisJ = j;
+
+                            button.addActionListener((ActionEvent e) -> {
+                            
+                            });
+                        } else {
+                            Image img = game.screen.getImage(Resources.water);
+                            button.setIcon(new ImageIcon(img));
+                            button.setBorderPainted(false);
+                            button.setContentAreaFilled(false);
+                            button.setFocusPainted(false);
+                            button.setOpaque(false);
+
+                            final int thisI = i;
+                            final int thisJ = j;
+
+                            button.addActionListener((ActionEvent e) -> {
+                            
+                            });
                         }
-                    });
+                    }
                 }
                 
                 button.setPreferredSize(new Dimension(30, 30));
