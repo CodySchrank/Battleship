@@ -168,12 +168,15 @@ class BattleShip {
     private int[][] playerBoard = new int[10][10];
     private int[][] enemyBoard = new int[10][10];
 
+
+    public boolean invalidShipPlacementWarning = false;
+    public JLabel invalidShipPlacementLabel = new JLabel("Current Ship Placement Invalid!");
+
     BattleShip(MainScreen screen) {
         this.screen = screen;
     }
 
     public void startGame() {
-
         this.phase = GamePhase.setting;
 
         this.boardPanel = new BoardPanel(this);
@@ -224,6 +227,11 @@ class BattleShip {
         gbc.gridy = 5;
         shipPanel.add(carrier, gbc);
 
+        gbc.gridy = 6;
+        invalidShipPlacementLabel.setForeground(Color.red);
+        invalidShipPlacementLabel.setVisible(this.invalidShipPlacementWarning);
+        shipPanel.add(invalidShipPlacementLabel, gbc);
+
         screen.add(shipPanel);
     }
 
@@ -235,18 +243,20 @@ class BattleShip {
         System.out.println("j: " + j);
         System.out.println();
 
-        screen.glassPane.paintShip(x, y, screen.getImage(shipToSet.resource));
-        screen.glassPane.repaint();
-        screen.glassPane.revalidate();
-        screen.glassPane.setVisible(true);
+        //if (valid) {
+        // screen.glassPane.paintShip(x, y, screen.getImage(shipToSet.resource));
+        // screen.glassPane.repaint();
+        // screen.glassPane.revalidate();
+        // screen.glassPane.setVisible(true);
 
-        shipToSet = null;
+        // shipToSet = null;
 
         // if() some condition to move on
+        // }
     }
 
     void play() {
-
+        this.phase = GamePhase.playing;
     }
 }
 
