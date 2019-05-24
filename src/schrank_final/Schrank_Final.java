@@ -5,22 +5,12 @@
  */
 package schrank_final;
 
-import javax.imageio.ImageIO;
+import javax.imageio.*;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.MouseInfo;
-import java.awt.Point;
-import java.awt.PointerInfo;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import javax.swing.border.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 
 /**
  *
@@ -141,13 +131,13 @@ class MainScreen extends JFrame {
 }
 
 class BattleShip {
-    private MainScreen screen;
+    public JButton shipToSet;
+    public MainScreen screen;
+    
     private GamePhase phase = GamePhase.start;
     
     private int[][] playerBoard = new int[10][10];
     private int[][] enemyBoard = new int[10][10];
-
-    private JButton shipToSet;
 
     BattleShip(MainScreen screen) {
         this.screen = screen;
@@ -225,21 +215,10 @@ class BattleShip {
 
         shipPanel.add(shipLabel, gbc);
 
-        JButton shipButton = new JButton();
-
-        shipButton.setIcon(new ImageIcon(screen.getImage(Resources.tugboat)));
-        shipButton.setBorderPainted(false); 
-        shipButton.setContentAreaFilled(false); 
-        shipButton.setFocusPainted(false); 
-        shipButton.setOpaque(false);
-
-        shipButton.addActionListener((ActionEvent e) -> {
-            this.shipToSet = shipButton;
-            shipButton.setEnabled(false);
-        });
-
+        ShipButton tugboat = new ShipButton(Resources.tugboat, this);
+        
         gbc.gridy = 1;
-        shipPanel.add(shipButton, gbc);
+        shipPanel.add(tugboat, gbc);
 
         screen.add(shipPanel);
     }
@@ -258,5 +237,19 @@ class BattleShip {
     void play() {
 
     }
-    
+}
+
+class ShipButton extends JButton {
+    ShipButton(Resources resource, BattleShip game) {
+        setIcon(new ImageIcon(game.screen.getImage(Resources.tugboat)));
+        setBorderPainted(false); 
+        setContentAreaFilled(false); 
+        setFocusPainted(false); 
+        setOpaque(false);
+
+        addActionListener((ActionEvent e) -> {
+            game.shipToSet = this;
+            setEnabled(false);
+        });
+    }
 }
