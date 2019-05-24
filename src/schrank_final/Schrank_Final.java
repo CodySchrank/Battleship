@@ -42,8 +42,8 @@ enum Resources {
     tugboat ("tugboat", 2),
     submarine ("submarine", 3),
     destroyer ("destroyer", 3),
-    carrier ("carrier", 4),
-    battleship ("battleship", 3);
+    carrier ("carrier", 5),
+    battleship ("battleship", 4);
 
     private final String value;
     private final int length;
@@ -168,8 +168,6 @@ class BattleShip {
     private int[][] playerBoard = new int[10][10];
     private int[][] enemyBoard = new int[10][10];
 
-
-    public boolean invalidShipPlacementWarning = false;
     public JLabel invalidShipPlacementLabel = new JLabel("Current Ship Placement Invalid!");
 
     BattleShip(MainScreen screen) {
@@ -229,13 +227,14 @@ class BattleShip {
 
         gbc.gridy = 6;
         invalidShipPlacementLabel.setForeground(Color.red);
-        invalidShipPlacementLabel.setVisible(this.invalidShipPlacementWarning);
+        invalidShipPlacementLabel.setVisible(false);
         shipPanel.add(invalidShipPlacementLabel, gbc);
 
         screen.add(shipPanel);
     }
 
-    void setShip(int x, int y, int i, int j) {
+    //returns false if ship placement is invalid
+    boolean setShip(int x, int y, int i, int j) {
         System.out.println(shipToSet.shipName);
         System.out.println("x: " + x);
         System.out.println("y: " + y);
@@ -243,20 +242,75 @@ class BattleShip {
         System.out.println("j: " + j);
         System.out.println();
 
-        //if (valid) {
-        // screen.glassPane.paintShip(x, y, screen.getImage(shipToSet.resource));
-        // screen.glassPane.repaint();
-        // screen.glassPane.revalidate();
-        // screen.glassPane.setVisible(true);
 
-        // shipToSet = null;
+        // only going to support hozizontal placement because it is easier
+        int shipLength = shipToSet.shipLength;
 
-        // if() some condition to move on
-        // }
+        // i is row
+        // j is col
+        int realI = i - 1;
+        int realJ = j - 1;
+
+        //invalid
+        if(realJ + shipLength > 10) {
+            return false;
+        }
+        
+        //test for ships already there
+        for(int testCol = realJ; testCol < realJ + shipLength; testCol++) {
+            if(playerBoard[realI][testCol] == 1) {
+                return false;
+            }
+        }
+
+        for(int col = realJ; col < 10; col++) {
+            //because 0-10, a-j adds an extra spot but player cant be there
+
+            //valid placement
+            if(shipLength > 0) {
+                playerBoard[realI][col] = 1;
+                shipLength--;
+            }
+        }
+
+        printPlayerBoard();
+
+        screen.glassPane.paintShip(x, y, screen.getImage(shipToSet.resource));
+        screen.glassPane.repaint();
+        screen.glassPane.revalidate();
+        screen.glassPane.setVisible(true);
+
+        shipToSet = null;
+
+        return true;
     }
 
     void play() {
         this.phase = GamePhase.playing;
+    }
+
+    void printPlayerBoard() {
+        for(int i = 0; i < 10; i++) {
+            for(int j = 0; j < 10; j++) {
+                System.out.printf("[%d]", this.playerBoard[i][j]);
+            }
+            System.out.println();
+        }
+    }
+
+    public boolean checkIfAllShipsSet() {
+        int total = 2 + 3 + 3 + 4 + 5;
+        int runningTotal = 0;
+
+        for(int i = 0; i < 10; i++) {
+            for(int j = 0; j < 10; j++) {
+                if(this.playerBoard[i][j] == 1){
+                    runningTotal++;
+                }
+            }
+        }
+
+        return runningTotal == total;
     }
 }
 
@@ -281,12 +335,8 @@ class GlassPane extends JComponent {
     }
 
     public void paintShip(int x, int y, Image shipImage) {
-        System.out.println(x);
         x = closestTo(x, xPossible);
-        System.out.println(x);
-        System.out.println(y);
         y = closestTo(y, yPossible);
-        System.out.println(y);
 
         int X_CORRECTION = 12;
         int Y_CORRECTION = 60;
@@ -357,7 +407,19 @@ class BoardPanel extends JPanel {
                         int y = (int) b.getY();
 
                         if(game.shipToSet != null) {
-                            game.setShip(x, y, thisI, thisJ);
+                            game.invalidShipPlacementLabel.setVisible(false);
+                            
+                            boolean validPlacement = game.setShip(x, y, thisI, thisJ);
+                            
+                            if(!validPlacement) {
+                                game.invalidShipPlacementLabel.setVisible(true);
+                            } else {
+                                if(game.checkIfAllShipsSet()) {
+                                    System.out.println("Time to play!");
+                                } else {
+                                    System.out.println("More ships to set");
+                                }
+                            }
                         }
                     });
                 }
