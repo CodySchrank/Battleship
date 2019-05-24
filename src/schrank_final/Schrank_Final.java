@@ -40,6 +40,9 @@ enum GamePhase {
 enum Resources {
     water ("water", 0),
     watercloud ("watercloud", 0),
+    watercloudmiss ("watercloudmiss", 0),
+    waterfire ("waterfire", 0),
+    fire ("fire", 0),
     tugboat ("tugboat", 2),
     submarine ("submarine", 3),
     destroyer ("destroyer", 3),
@@ -72,25 +75,34 @@ class MainScreen extends JFrame {
         super("Schrank_BattleShip");
 
         try {
-            Image water = ImageIO.read(getClass().getResource("Water.png"));
+            Image water = ImageIO.read(getClass().getResource("assets/Water.png"));
             images.put(Resources.water.getValue(), water);
 
-            Image watercloud = ImageIO.read(getClass().getResource("WaterCloud.png"));
+            Image watercloud = ImageIO.read(getClass().getResource("assets/WaterCloud.png"));
             images.put(Resources.watercloud.getValue(), watercloud);
 
-            Image tugboat = ImageIO.read(getClass().getResource("TugBoat.png"));
+            Image watercloudmiss = ImageIO.read(getClass().getResource("assets/WaterCloudMiss.png"));
+            images.put(Resources.watercloudmiss.getValue(), watercloudmiss);
+
+            Image waterfire = ImageIO.read(getClass().getResource("assets/WaterFire.png"));
+            images.put(Resources.waterfire.getValue(), waterfire);
+
+            Image fire = ImageIO.read(getClass().getResource("assets/Fire.png"));
+            images.put(Resources.fire.getValue(), fire);
+
+            Image tugboat = ImageIO.read(getClass().getResource("assets/TugBoat.png"));
             images.put(Resources.tugboat.getValue(), tugboat);
 
-            Image destroyer = ImageIO.read(getClass().getResource("Destroyer.png"));
+            Image destroyer = ImageIO.read(getClass().getResource("assets/Destroyer.png"));
             images.put(Resources.destroyer.getValue(), destroyer);
 
-            Image battleship = ImageIO.read(getClass().getResource("Battleship.png"));
+            Image battleship = ImageIO.read(getClass().getResource("assets/Battleship.png"));
             images.put(Resources.battleship.getValue(), battleship);
 
-            Image submarine = ImageIO.read(getClass().getResource("Submarine.png"));
+            Image submarine = ImageIO.read(getClass().getResource("assets/Submarine.png"));
             images.put(Resources.submarine.getValue(), submarine);
 
-            Image carrier = ImageIO.read(getClass().getResource("Carrier.png"));
+            Image carrier = ImageIO.read(getClass().getResource("assets/Carrier.png"));
             images.put(Resources.carrier.getValue(), carrier);
         } catch (Exception ex) {
             System.out.println(ex);
@@ -168,12 +180,16 @@ class BattleShip {
     public BoardPanel boardPanel;
     public BoardPanel enemyBoardPanel;
     public JPanel shipPanel;
+    public JLabel turnLabel;
 
     public boolean enemyTurn = false;
     public GamePhase phase = GamePhase.start;
     
     private int[][] playerBoard = new int[10][10];
     private int[][] enemyBoard = new int[10][10];
+
+    private String yourTurnString = String.format("<html><div style=\"width:%dpx;\">%s</div></html>", 76, "Your Turn!  Click on a cloud to shoot a missile");
+    private String enemyTurnString = String.format("<html><div style=\"width:%dpx;\">%s</div></html>", 76, "Enemy's Turn!  Better hope there missile misses your boat!");
 
     public JLabel invalidShipPlacementLabel = new JLabel("Current Ship Placement Invalid!");
 
@@ -299,7 +315,9 @@ class BattleShip {
 
         JPanel emptyPanel = new JPanel();
 
-        emptyPanel.setBorder(new EmptyBorder(0, 100, 0, 0));
+        turnLabel = new JLabel(this.yourTurnString);
+
+        emptyPanel.add(turnLabel);
         
         emptyPanel.setOpaque(false);
 
@@ -323,6 +341,7 @@ class BattleShip {
 
     public boolean checkIfAllShipsSet() {
         int total = 2 + 3 + 3 + 4 + 5;
+        // int total = 2;
         int runningTotal = 0;
 
         for(int i = 0; i < 10; i++) {
