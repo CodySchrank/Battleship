@@ -36,21 +36,27 @@ enum GamePhase {
 }
 
 enum Resources {
-    water ("water"),
-    tugboat ("tugboat"),
-    submarine ("submarine"),
-    destroyer ("destroyer"),
-    carrier ("carrier"),
-    battleship ("battleship");
+    water ("water", 0),
+    tugboat ("tugboat", 2),
+    submarine ("submarine", 3),
+    destroyer ("destroyer", 3),
+    carrier ("carrier", 4),
+    battleship ("battleship", 3);
 
     private final String value;
+    private final int length;
 
-    private Resources(String value) {
+    private Resources(String value, int length) {
         this.value = value;
+        this.length = length;
     }
 
     public String getValue() {
         return value;
+    }
+
+    public int getLength() {
+        return length;
     }
 }
 
@@ -58,14 +64,26 @@ class MainScreen extends JFrame {
     private HashMap<String, Image> images = new HashMap<String, Image>();
 
     public MainScreen() {
-        super("BattleShip");
+        super("Schrank_BattleShip");
 
         try {
-            Image water = ImageIO.read(getClass().getResource("water.png"));
+            Image water = ImageIO.read(getClass().getResource("Water.png"));
             images.put(Resources.water.getValue(), water);
 
-            Image tugboat = ImageIO.read(getClass().getResource("tugboat.png"));
+            Image tugboat = ImageIO.read(getClass().getResource("TugBoat.png"));
             images.put(Resources.tugboat.getValue(), tugboat);
+
+            Image destroyer = ImageIO.read(getClass().getResource("Destroyer.png"));
+            images.put(Resources.destroyer.getValue(), destroyer);
+
+            Image battleship = ImageIO.read(getClass().getResource("Battleship.png"));
+            images.put(Resources.battleship.getValue(), battleship);
+
+            Image submarine = ImageIO.read(getClass().getResource("Submarine.png"));
+            images.put(Resources.submarine.getValue(), submarine);
+
+            Image carrier = ImageIO.read(getClass().getResource("Carrier.png"));
+            images.put(Resources.carrier.getValue(), carrier);
         } catch (Exception ex) {
             System.out.println(ex);
 
@@ -131,9 +149,9 @@ class MainScreen extends JFrame {
 }
 
 class BattleShip {
-    public JButton shipToSet;
+    public ShipButton shipToSet;
     public MainScreen screen;
-    
+
     private GamePhase phase = GamePhase.start;
     
     private int[][] playerBoard = new int[10][10];
@@ -146,53 +164,7 @@ class BattleShip {
     public void startGame() {
         this.phase = GamePhase.setting;
 
-        JPanel boardPanel = new JPanel();
-
-        boardPanel.setSize(500, 500);
-
-        GridLayout layout = new GridLayout(11, 11);
-        boardPanel.setLayout(layout);
-
-        for (int i = 0; i < 11; i++) {
-            for (int j = 0; j < 11; j++) {
-                JButton button = new JButton();
-                
-                if(j == 0) {
-                    button.setText(Character.toString((char) (i + 96))); // a - j
-                }
-                
-                if(i == 0) {
-                    button.setText(String.valueOf(j));
-                }
-
-                if(i != 0 && j != 0) {
-                    Image img = screen.getImage(Resources.water);
-                    button.setIcon(new ImageIcon(img));
-                    button.setBorderPainted(false); 
-                    button.setContentAreaFilled(false); 
-                    button.setFocusPainted(false); 
-                    button.setOpaque(false);
-                    
-                    final int thisI = i;
-                    final int thisJ = j;
-
-                    button.addActionListener((ActionEvent e) -> {
-                        PointerInfo a = MouseInfo.getPointerInfo();
-                        Point b = a.getLocation();
-                        int x = (int) b.getX();
-                        int y = (int) b.getY();
-
-                        if(shipToSet != null) {
-                            this.setShip(x, y, thisI, thisJ);
-                        }
-                    });
-                }
-                
-                button.setPreferredSize(new Dimension(30, 30));
-
-                boardPanel.add(button);
-            }
-        }
+        BoardPanel boardPanel = new BoardPanel(this);
 
         screen.add(boardPanel);
 
@@ -220,16 +192,39 @@ class BattleShip {
         gbc.gridy = 1;
         shipPanel.add(tugboat, gbc);
 
+        ShipButton submarine = new ShipButton(Resources.submarine, this);
+        
+        gbc.gridy = 2;
+        shipPanel.add(submarine, gbc);
+
+        ShipButton destroyer = new ShipButton(Resources.destroyer, this);
+        
+        gbc.gridy = 3;
+        shipPanel.add(destroyer, gbc);
+
+        ShipButton battleship = new ShipButton(Resources.battleship, this);
+        
+        gbc.gridy = 4;
+        shipPanel.add(battleship, gbc);
+
+        ShipButton carrier = new ShipButton(Resources.carrier, this);
+        
+        gbc.gridy = 5;
+        shipPanel.add(carrier, gbc);
+
         screen.add(shipPanel);
     }
 
     void setShip(int x, int y, int i, int j) {
+        System.out.println(shipToSet.shipName);
         System.out.println("x: " + x);
         System.out.println("y: " + y);
         System.out.println("i: " + i);
         System.out.println("j: " + j);
+        System.out.println();
 
-        shipToSet = null;
+        
+        // shipToSet = null;
 
         // if() some condition to move on
     }
@@ -239,17 +234,87 @@ class BattleShip {
     }
 }
 
+class BoardPanel extends JPanel {
+    BoardPanel(BattleShip game) {
+        super();
+
+        setSize(500, 500);
+
+        GridLayout layout = new GridLayout(11, 11);
+        setLayout(layout);
+
+        for (int i = 0; i < 11; i++) {
+            for (int j = 0; j < 11; j++) {
+                JButton button = new JButton();
+                
+                if(j == 0) {
+                    button.setText(Character.toString((char) (i + 96))); // a - j
+                }
+                
+                if(i == 0) {
+                    button.setText(String.valueOf(j));
+                }
+
+                if(i != 0 && j != 0) {
+                    Image img = game.screen.getImage(Resources.water);
+                    button.setIcon(new ImageIcon(img));
+                    button.setBorderPainted(false); 
+                    button.setContentAreaFilled(false); 
+                    button.setFocusPainted(false); 
+                    button.setOpaque(false);
+                    
+                    final int thisI = i;
+                    final int thisJ = j;
+
+                    button.addActionListener((ActionEvent e) -> {
+                        PointerInfo a = MouseInfo.getPointerInfo();
+                        Point b = a.getLocation();
+                        int x = (int) b.getX();
+                        int y = (int) b.getY();
+
+                        if(game.shipToSet != null) {
+                            game.setShip(x, y, thisI, thisJ);
+                        }
+                    });
+                }
+                
+                button.setPreferredSize(new Dimension(30, 30));
+
+                add(button);
+            }
+        }
+    }
+
+    @Override
+    public void paintComponent(Graphics g)
+    {
+       super.paintComponent(g);
+    }
+}
+
 class ShipButton extends JButton {
+    public Resources resource;
+    public final String shipName;
+    public final int shipLength;
+
     ShipButton(Resources resource, BattleShip game) {
-        setIcon(new ImageIcon(game.screen.getImage(Resources.tugboat)));
+        super();
+
+        this.resource = resource;
+        this.shipName = resource.getValue();
+        this.shipLength = resource.getLength();
+            
+        setIcon(new ImageIcon(game.screen.getImage(resource)));
         setBorderPainted(false); 
         setContentAreaFilled(false); 
         setFocusPainted(false); 
         setOpaque(false);
 
         addActionListener((ActionEvent e) -> {
-            game.shipToSet = this;
-            setEnabled(false);
+            if(game.shipToSet == null) {
+                game.shipToSet = this;
+                setEnabled(false);
+            }
         });
     }
 }
