@@ -5,13 +5,22 @@
  */
 package schrank_final;
 
-import java.awt.*;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.PointerInfo;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -36,9 +45,42 @@ enum GamePhase {
     end
 }
 
+enum Resources {
+    water ("water"),
+    tugboat ("tugboat"),
+    submarine ("submarine"),
+    destroyer ("destroyer"),
+    carrier ("carrier"),
+    battleship ("battleship");
+
+    private final String value;
+
+    private Resources(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}
+
 class MainScreen extends JFrame {
+    private HashMap<String, Image> images = new HashMap<String, Image>();
+
     public MainScreen() {
         super("BattleShip");
+
+        try {
+            Image water = ImageIO.read(getClass().getResource("water.png"));
+            images.put(Resources.water.getValue(), water);
+
+            Image tugboat = ImageIO.read(getClass().getResource("tugboat.png"));
+            images.put(Resources.tugboat.getValue(), tugboat);
+        } catch (Exception ex) {
+            System.out.println(ex);
+
+            System.exit(0);
+        }
     }
 
     public void clearScreen() {
@@ -60,6 +102,10 @@ class MainScreen extends JFrame {
         this.setSize(500, 500);
         this.setResizable(true);
         this.setVisible(true);
+    }
+
+    public Image getImage(Resources resource) {
+        return this.images.get(resource.getValue());
     }
 
     private void openMenu() {
@@ -130,30 +176,26 @@ class BattleShip {
                 }
 
                 if(i != 0 && j != 0) {
-                    try {
-                        Image img = ImageIO.read(getClass().getResource("water.png"));
-                        button.setIcon(new ImageIcon(img));
-                        button.setBorderPainted(false); 
-                        button.setContentAreaFilled(false); 
-                        button.setFocusPainted(false); 
-                        button.setOpaque(false);
-                        
-                        final int thisI = i;
-                        final int thisJ = j;
+                    Image img = screen.getImage(Resources.water);
+                    button.setIcon(new ImageIcon(img));
+                    button.setBorderPainted(false); 
+                    button.setContentAreaFilled(false); 
+                    button.setFocusPainted(false); 
+                    button.setOpaque(false);
+                    
+                    final int thisI = i;
+                    final int thisJ = j;
 
-                        button.addActionListener((ActionEvent e) -> {
-                            PointerInfo a = MouseInfo.getPointerInfo();
-                            Point b = a.getLocation();
-                            int x = (int) b.getX();
-                            int y = (int) b.getY();
+                    button.addActionListener((ActionEvent e) -> {
+                        PointerInfo a = MouseInfo.getPointerInfo();
+                        Point b = a.getLocation();
+                        int x = (int) b.getX();
+                        int y = (int) b.getY();
 
-                            if(shipToSet != null) {
-                                this.setShip(x, y, thisI, thisJ);
-                            }
-                        });
-                    } catch (Exception ex) {
-                        System.out.println(ex);
-                    }    
+                        if(shipToSet != null) {
+                            this.setShip(x, y, thisI, thisJ);
+                        }
+                    });
                 }
                 
                 button.setPreferredSize(new Dimension(30, 30));
@@ -185,16 +227,11 @@ class BattleShip {
 
         JButton shipButton = new JButton();
 
-        try {
-            Image img = ImageIO.read(getClass().getResource("Submarine.png"));
-            shipButton.setIcon(new ImageIcon(img));
-            shipButton.setBorderPainted(false); 
-            shipButton.setContentAreaFilled(false); 
-            shipButton.setFocusPainted(false); 
-            shipButton.setOpaque(false);
-        } catch (Exception ex) {
-            System.out.println(ex);
-        }
+        shipButton.setIcon(new ImageIcon(screen.getImage(Resources.tugboat)));
+        shipButton.setBorderPainted(false); 
+        shipButton.setContentAreaFilled(false); 
+        shipButton.setFocusPainted(false); 
+        shipButton.setOpaque(false);
 
         shipButton.addActionListener((ActionEvent e) -> {
             this.shipToSet = shipButton;
@@ -219,7 +256,7 @@ class BattleShip {
     }
 
     void play() {
-        
+
     }
     
 }
