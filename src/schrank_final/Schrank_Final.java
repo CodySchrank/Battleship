@@ -63,6 +63,8 @@ enum Resources {
 class MainScreen extends JFrame {
     private HashMap<String, Image> images = new HashMap<String, Image>();
 
+    protected GlassPane glassPane;
+
     public MainScreen() {
         super("Schrank_BattleShip");
 
@@ -143,6 +145,12 @@ class MainScreen extends JFrame {
 
         this.clearScreen();
 
+        glassPane = new GlassPane();
+        glassPane.setSize(1000, 500);
+        glassPane.setVisible(true);
+
+        this.setGlassPane(glassPane);
+
         BattleShip battleShip = new BattleShip(this);
         battleShip.startGame();
     }
@@ -151,6 +159,7 @@ class MainScreen extends JFrame {
 class BattleShip {
     public ShipButton shipToSet;
     public MainScreen screen;
+    public BoardPanel boardPanel;
 
     private GamePhase phase = GamePhase.start;
     
@@ -162,9 +171,10 @@ class BattleShip {
     }
 
     public void startGame() {
+
         this.phase = GamePhase.setting;
 
-        BoardPanel boardPanel = new BoardPanel(this);
+        this.boardPanel = new BoardPanel(this);
 
         screen.add(boardPanel);
 
@@ -223,14 +233,38 @@ class BattleShip {
         System.out.println("j: " + j);
         System.out.println();
 
-        
-        // shipToSet = null;
+        screen.glassPane.paintShip(x, y, screen.getImage(shipToSet.resource));
+        screen.glassPane.repaint();
+        screen.glassPane.revalidate();
+        screen.glassPane.setVisible(true);
+
+        shipToSet = null;
 
         // if() some condition to move on
     }
 
     void play() {
 
+    }
+}
+
+
+class GlassPane extends JComponent {
+    private Image currentShip;
+    private int currentX;
+    private int currentY;
+
+    public void paintShip(int x, int y, Image ship) {
+        this.currentShip = ship;
+        this.currentX = x;
+        this.currentY = y;
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        if(currentShip != null) {
+            g.drawImage(currentShip, currentX, currentY, this);
+        }
     }
 }
 
@@ -284,12 +318,19 @@ class BoardPanel extends JPanel {
             }
         }
     }
+}
 
-    @Override
-    public void paintComponent(Graphics g)
-    {
-       super.paintComponent(g);
+class Ship {
+    public int x;
+    public int y;
+    public Image image;
+    
+    Ship(int x, int y, Image image) {
+        this.x = x;
+        this.y = y;
+        this.image = image;
     }
+
 }
 
 class ShipButton extends JButton {
