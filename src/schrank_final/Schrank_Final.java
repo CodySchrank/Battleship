@@ -11,6 +11,8 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
+import java.lang.Math;
 
 /**
  *
@@ -250,21 +252,59 @@ class BattleShip {
 
 
 class GlassPane extends JComponent {
-    private Image currentShip;
-    private int currentX;
-    private int currentY;
+    private List<Ship> ships;
+    private int[] xPossible = new int[10];
+    private int[] yPossible = new int[10];
 
-    public void paintShip(int x, int y, Image ship) {
-        this.currentShip = ship;
-        this.currentX = x;
-        this.currentY = y;
+    GlassPane() {
+        ships = new ArrayList<Ship>();
+
+        int xStart = 185;
+        for(int i = 0; i < xPossible.length; i++) {
+            xPossible[i] = xStart + (i * 30);
+        }
+
+        int yStart = 165;
+        for(int i = 0; i < yPossible.length; i++) {
+            yPossible[i] = yStart + (i * 30);
+        }
+    }
+
+    public void paintShip(int x, int y, Image shipImage) {
+        System.out.println(x);
+        x = closestTo(x, xPossible);
+        System.out.println(x);
+        System.out.println(y);
+        y = closestTo(y, yPossible);
+        System.out.println(y);
+
+        int X_CORRECTION = 12;
+        int Y_CORRECTION = 60;
+
+        ships.add(new Ship(x - X_CORRECTION, y - Y_CORRECTION, shipImage));
     }
 
     @Override
     public void paintComponent(Graphics g) {
-        if(currentShip != null) {
-            g.drawImage(currentShip, currentX, currentY, this);
+        for (Ship ship : this.ships) {
+            g.drawImage(ship.image, ship.x, ship.y, this);
         }
+    }
+
+    public int closestTo(int number, int[] set) {
+        int closest = set[0];
+        int prev = Math.abs(set[0] - number);
+
+        for(int i = 1; i < set.length; i++) {
+            int diff = Math.abs(set[i] - number);
+
+            if(diff < prev) {
+                prev = diff;
+                closest = set[i];
+            }
+        }
+
+        return closest;
     }
 }
 
