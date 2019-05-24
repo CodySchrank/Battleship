@@ -29,6 +29,13 @@ public class Schrank_Final {
 
 }
 
+enum GamePhase {
+    start,
+    setting,
+    playing,
+    end
+}
+
 class MainScreen extends JFrame {
     public MainScreen() {
         super("BattleShip");
@@ -89,19 +96,20 @@ class MainScreen extends JFrame {
 
 class BattleShip {
     private MainScreen screen;
+    private GamePhase phase = GamePhase.start;
     
     private int[][] playerBoard = new int[10][10];
     private int[][] enemyBoard = new int[10][10];
+
+    private JButton shipToSet;
 
     BattleShip(MainScreen screen) {
         this.screen = screen;
     }
 
     public void startGame() {
-        this.getPlayerShips();
-    }
+        this.phase = GamePhase.setting;
 
-    public void getPlayerShips() {
         JPanel boardPanel = new JPanel();
 
         boardPanel.setSize(500, 500);
@@ -114,20 +122,40 @@ class BattleShip {
                 JButton button = new JButton();
                 
                 if(j == 0) {
-                    button.setText(String.valueOf(i));
+                    button.setText(Character.toString((char) (i + 96))); // a - j
                 }
                 
-                 if(i == 0) {
+                if(i == 0) {
                     button.setText(String.valueOf(j));
                 }
 
-//                try {
-//                    Image img = ImageIO.read(getClass().getResource("target.jpg"));
-//                    button.setIcon(new ImageIcon(img));
-//                } catch (Exception ex) {
-//                    System.out.println(ex);
-//                }
+                if(i != 0 && j != 0) {
+                    try {
+                        Image img = ImageIO.read(getClass().getResource("water.png"));
+                        button.setIcon(new ImageIcon(img));
+                        button.setBorderPainted(false); 
+                        button.setContentAreaFilled(false); 
+                        button.setFocusPainted(false); 
+                        button.setOpaque(false);
+                        
+                        final int thisI = i;
+                        final int thisJ = j;
 
+                        button.addActionListener((ActionEvent e) -> {
+                            PointerInfo a = MouseInfo.getPointerInfo();
+                            Point b = a.getLocation();
+                            int x = (int) b.getX();
+                            int y = (int) b.getY();
+
+                            if(shipToSet != null) {
+                                this.setShip(x, y, thisI, thisJ);
+                            }
+                        });
+                    } catch (Exception ex) {
+                        System.out.println(ex);
+                    }    
+                }
+                
                 button.setPreferredSize(new Dimension(30, 30));
 
                 boardPanel.add(button);
@@ -135,6 +163,8 @@ class BattleShip {
         }
 
         screen.add(boardPanel);
+
+        //ship panel
 
         JPanel shipPanel = new JPanel();
 
@@ -144,15 +174,52 @@ class BattleShip {
 
         shipPanel.setLayout(new GridBagLayout());
 
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridy = 0;
+
         shipPanel.setOpaque(false);
 
-        GridBagConstraints gbc = new GridBagConstraints();
+        JLabel shipLabel = new JLabel("Click each ship, then click board, to set their position");
 
-        JButton ship = new JButton("Ship");
+        shipPanel.add(shipLabel, gbc);
 
-        shipPanel.add(ship, gbc);
+        JButton shipButton = new JButton();
+
+        try {
+            Image img = ImageIO.read(getClass().getResource("Submarine.png"));
+            shipButton.setIcon(new ImageIcon(img));
+            shipButton.setBorderPainted(false); 
+            shipButton.setContentAreaFilled(false); 
+            shipButton.setFocusPainted(false); 
+            shipButton.setOpaque(false);
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+
+        shipButton.addActionListener((ActionEvent e) -> {
+            this.shipToSet = shipButton;
+            shipButton.setEnabled(false);
+        });
+
+        gbc.gridy = 1;
+        shipPanel.add(shipButton, gbc);
 
         screen.add(shipPanel);
     }
 
+    void setShip(int x, int y, int i, int j) {
+        System.out.println("x: " + x);
+        System.out.println("y: " + y);
+        System.out.println("i: " + i);
+        System.out.println("j: " + j);
+
+        shipToSet = null;
+
+        // if() some condition to move on
+    }
+
+    void play() {
+        
+    }
+    
 }
