@@ -184,6 +184,8 @@ class BattleShip {
 
     public boolean enemyTurn = false;
     public GamePhase phase = GamePhase.start;
+
+    public JLabel invalidShipPlacementLabel = new JLabel("Current Ship Placement Invalid!");
     
     private int[][] playerBoard = new int[10][10];
     private int[][] enemyBoard = new int[10][10];
@@ -191,7 +193,7 @@ class BattleShip {
     private String yourTurnString = String.format("<html><div style=\"width:%dpx;\">%s</div></html>", 76, "Your Turn!  Click on a cloud to shoot a missile");
     private String enemyTurnString = String.format("<html><div style=\"width:%dpx;\">%s</div></html>", 76, "Enemy's Turn!  Better hope there missile misses your boat!");
 
-    public JLabel invalidShipPlacementLabel = new JLabel("Current Ship Placement Invalid!");
+    private final Random RND = new Random();
 
     BattleShip(MainScreen screen) {
         this.screen = screen;
@@ -327,7 +329,7 @@ class BattleShip {
 
         screen.add(enemyBoardPanel);
 
-
+        generateEnemyBoard();
     }
 
     void printPlayerBoard() {
@@ -340,8 +342,8 @@ class BattleShip {
     }
 
     public boolean checkIfAllShipsSet() {
-        int total = 2 + 3 + 3 + 4 + 5;
-        // int total = 2;
+        // int total = 2 + 3 + 3 + 4 + 5;
+        int total = 2;
         int runningTotal = 0;
 
         for(int i = 0; i < 10; i++) {
@@ -353,6 +355,33 @@ class BattleShip {
         }
 
         return runningTotal == total;
+    }
+
+    public void generateEnemyBoard() {
+        int[] rows = generateRandomSetOfNumbers(0, 10, 5);
+
+        for (int row : rows) {
+            System.out.println(row);
+            //TODO: for each row generate valid column space.
+        }
+    }
+
+    public int[] generateRandomSetOfNumbers(int lowerBound, int upperBound, int count) {
+        ArrayList<Integer> list = new ArrayList<Integer>();
+
+        for (int i = lowerBound; i < upperBound; i++) {
+            list.add(new Integer(i));
+        }
+
+        Collections.shuffle(list);
+
+        int[] nums = new int[count];
+
+        for (int i = 0; i < count; i++) {
+            nums[i] = list.get(i);
+        }
+
+        return nums;
     }
 }
 
