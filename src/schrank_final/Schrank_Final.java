@@ -187,8 +187,8 @@ class BattleShip {
 
     public JLabel invalidShipPlacementLabel = new JLabel("Current Ship Placement Invalid!");
     
-    private int[][] playerBoard = new int[10][10];
-    private int[][] enemyBoard = new int[10][10];
+    public int[][] playerBoard = new int[10][10];
+    public int[][] enemyBoard = new int[10][10];
 
     private String yourTurnString = String.format("<html><div style=\"width:%dpx;\">%s</div></html>", 76, "Your Turn!  Click on a cloud to shoot a missile");
     private String enemyTurnString = String.format("<html><div style=\"width:%dpx;\">%s</div></html>", 76, "Enemy's Turn!  Better hope there missile misses your boat!");
@@ -346,8 +346,7 @@ class BattleShip {
     }
 
     public boolean checkIfAllShipsSet() {
-        // int total = 2 + 3 + 3 + 4 + 5;
-        int total = 2;
+        int total = 2 + 3 + 3 + 4 + 5;
         int runningTotal = 0;
 
         for(int i = 0; i < 10; i++) {
@@ -400,11 +399,56 @@ class BattleShip {
     public boolean checkIfPlayerShotIsHit(int i, int j) {
         return this.enemyBoard[i][j] == 1;
     }
+
+    public void checkIfWin() {
+        int total = 2 + 3 + 3 + 4 + 5;
+        int runningTotalForPlayer = 0;
+        int runningTotalForEnemy = 0;
+
+        for(int i = 0; i < 10; i++) {
+            for(int j = 0; j < 10; j++) {
+                if(this.enemyBoard[i][j] == 2){
+                    runningTotalForPlayer++;
+                }
+                if(this.playerBoard[i][j] == 2){
+                    runningTotalForEnemy++;
+                }
+            }
+        }
+
+        if(runningTotalForPlayer == total) {
+            screen.clearScreen();
+            screen.glassPane.ships = new ArrayList<Ship>();
+
+            JLabel win = new JLabel("You Win!");
+
+            screen.add(win);
+        } else if(runningTotalForEnemy == total) {
+            screen.clearScreen();
+            screen.glassPane.ships = new ArrayList<Ship>();
+
+            JLabel lose = new JLabel("You Lose!");
+            screen.add(lose);
+        }
+    }
+
+    public void enemyTurn() {
+        int row = generateRandomSetOfNumbers(0, 10, 1)[0];
+        int col = generateRandomSetOfNumbers(0, 10, 1)[0];
+
+        if(this.playerBoard[row][col] == 1) {
+            System.out.println("Enemy Hit");
+            this.playerBoard[row][col] = 2;
+        } else {
+            System.out.println("Enemy Miss");
+        }
+    }
 }
 
 
 class GlassPane extends JComponent {
-    private List<Ship> ships;
+    public List<Ship> ships;
+
     private int[] xPossible = new int[10];
     private int[] yPossible = new int[10];
 
@@ -534,12 +578,18 @@ class BoardPanel extends JPanel {
                                     Image newImg = game.screen.getImage(Resources.waterfire);
                                     button.setDisabledIcon(new ImageIcon(newImg));
                                     button.setEnabled(false);
+
+                                    game.enemyBoard[realI][realJ] = 2;
                                 } else {
                                     System.out.println("MISS! i " + realI +  " j " + realJ);
                                     Image newImg = game.screen.getImage(Resources.watercloudmiss);
                                     button.setDisabledIcon(new ImageIcon(newImg));
                                     button.setEnabled(false);
                                 }
+
+                                game.checkIfWin();
+
+                                game.enemyTurn();
                             });
                         } else {
                             Image img = game.screen.getImage(Resources.water);
