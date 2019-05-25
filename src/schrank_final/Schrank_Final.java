@@ -15,7 +15,7 @@ import java.util.List;
 import java.lang.Math;
 
 /**
- *
+ *1
  * @author Cody Schrank
  */
 public class Schrank_Final {
@@ -298,7 +298,7 @@ class BattleShip {
             }
         }
 
-        printPlayerBoard();
+        printBoard(this.playerBoard);
 
         screen.glassPane.paintShip(x, y, screen.getImage(shipToSet.resource));
         screen.glassPane.repaint();
@@ -330,13 +330,17 @@ class BattleShip {
         screen.add(enemyBoardPanel);
 
         generateEnemyBoard();
+
+        System.out.println("Enemy Board:");
+        printBoard(this.enemyBoard);
     }
 
-    void printPlayerBoard() {
+    void printBoard(int[][] board) {
         for(int i = 0; i < 10; i++) {
             for(int j = 0; j < 10; j++) {
-                System.out.printf("[%d]", this.playerBoard[i][j]);
+                System.out.printf("[%d]", board[i][j]);
             }
+
             System.out.println();
         }
     }
@@ -358,11 +362,20 @@ class BattleShip {
     }
 
     public void generateEnemyBoard() {
-        int[] rows = generateRandomSetOfNumbers(0, 10, 5);
+        int[] ships = { 2, 3, 3, 4, 5 };
 
-        for (int row : rows) {
-            System.out.println(row);
-            //TODO: for each row generate valid column space.
+        int[] rows = generateRandomSetOfNumbers(0, 10, ships.length);
+
+        for(int i = 0; i < ships.length; i++) {
+            int col = generateRandomSetOfNumbers(0, 10 - ships[i], 1)[0];
+
+            System.out.println("col: " + col + " row: " + rows[i] + " shiplength: " + ships[i]);
+            final int lastCol = col + ships[i];
+
+            for(int c = col; c < lastCol; c++) {
+                System.out.println(c);
+                this.enemyBoard[rows[i]][c] = 1;
+            }
         }
     }
 
@@ -382,6 +395,10 @@ class BattleShip {
         }
 
         return nums;
+    }
+
+    public boolean checkIfPlayerShotIsHit(int i, int j) {
+        return this.enemyBoard[i][j] == 1;
     }
 }
 
@@ -508,11 +525,21 @@ class BoardPanel extends JPanel {
                             button.setFocusPainted(false);
                             button.setOpaque(false);
 
-                            final int thisI = i;
-                            final int thisJ = j;
+                            final int realI = i - 1;
+                            final int realJ = j - 1;
 
                             button.addActionListener((ActionEvent e) -> {
-                            
+                                if(game.checkIfPlayerShotIsHit(realI, realJ)) {
+                                    System.out.println("HIT! i " + realI +  " j " + realJ);
+                                    Image newImg = game.screen.getImage(Resources.waterfire);
+                                    button.setDisabledIcon(new ImageIcon(newImg));
+                                    button.setEnabled(false);
+                                } else {
+                                    System.out.println("MISS! i " + realI +  " j " + realJ);
+                                    Image newImg = game.screen.getImage(Resources.watercloudmiss);
+                                    button.setDisabledIcon(new ImageIcon(newImg));
+                                    button.setEnabled(false);
+                                }
                             });
                         } else {
                             Image img = game.screen.getImage(Resources.water);
